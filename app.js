@@ -64,11 +64,12 @@ const galleryItems = [
   },
 ];
 
-const gallery = document.querySelector('.gallery');
 const galleryJS = document.querySelector('.js-gallery');
 const modalEL = document.querySelector('.js-lightbox');
 const modalImgEl = document.querySelector('.lightbox__image');
-const modalBtnEl = document.querySelector('[data-action="close-lightbox"]')
+const modalBtnEl = document.querySelector('[data-action="close-lightbox"]');
+const modalDivEl = document.querySelector('.lightbox__overlay');
+let imgUrl = '';
 
 const galleryArr = galleryItems.map(({ preview, original, description }) => {
  return `<li class="gallery__item">
@@ -86,21 +87,45 @@ const galleryArr = galleryItems.map(({ preview, original, description }) => {
 </li>`;
 });
 
-gallery.insertAdjacentHTML('afterbegin', galleryArr.join(''));
+galleryJS.insertAdjacentHTML('afterbegin', galleryArr.join(''));
+
+
 
 galleryJS.addEventListener('click', openModalGallery);
+
+modalDivEl.addEventListener('click', closeModal);
+
+document.addEventListener('keyup', function (e) {
+  if (e.code === "Escape") closeModal();
+
+  if (e.code === "ArrowLeft") {
+    const previousEl = document.querySelector(`[data-source="${imgUrl}"]`).closest('.gallery__item').previousElementSibling;
+    if (!previousEl) return;
+    imgUrl = previousEl.querySelector('.gallery__image').getAttribute('data-source');
+    setAttributeModalImg(imgUrl);
+
+  };
+
+  if (e.code === "ArrowRight") {
+    const nextEl = document.querySelector(`[data-source="${imgUrl}"]`).closest('.gallery__item').nextElementSibling;
+    if (!nextEl) return;
+    imgUrl = nextEl.querySelector('.gallery__image').getAttribute('data-source');
+    setAttributeModalImg(imgUrl);
+  }
+    
+});
 
 function openModalGallery(e) {
  
   if (e.target.nodeName === 'UL') return;
-  
+
   e.preventDefault();
 
-  const imgUrl = e.target.getAttribute('data-source');
+  imgUrl = e.target.getAttribute('data-source');
   
 
   modalEL.classList.add('is-open');
-  modalImgEl.setAttribute('src', imgUrl);
+  setAttributeModalImg(imgUrl);
   modalBtnEl.addEventListener('click', closeModal);
 
   
@@ -110,5 +135,9 @@ function closeModal() {
   modalEL.classList.remove('is-open');
   modalImgEl.setAttribute('src', '');
   modalBtnEl.removeEventListener('click', closeModal);
+  imgUrl = '';
 }
 
+function setAttributeModalImg(imgUrl) {
+  modalImgEl.setAttribute('src', imgUrl);
+}
